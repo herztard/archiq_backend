@@ -24,15 +24,30 @@ load_dotenv()
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-d4#)h&q_^@t-hz2bf3iyndy7nmzv3hjvaww0h$j(n@bhn=b)*m'
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# PSKZ ENV VARIABLES
+AWS_ACCESS_KEY_ID = os.getenv('S3_ACCESS_KEY')
+AWS_SECRET_ACCESS_KEY = os.getenv('S3_SECRET_KEY')
+AWS_STORAGE_BUCKET_NAME = os.getenv('S3_BUCKET_NAME')
+AWS_S3_ENDPOINT_URL = os.getenv('S3_BUCKET_URL')
+AWS_S3_FULL_URL=os.getenv('S3_BUCKET_FULL_URL')
 
+# Optional: If you want to serve files via a custom domain, define it here:
+AWS_S3_CUSTOM_DOMAIN = os.getenv('AWS_S3_CUSTOM_DOMAIN')
 
+# Recommended settings
+AWS_DEFAULT_ACL = None
+AWS_S3_FILE_OVERWRITE = False
+AWS_QUERYSTRING_AUTH = False
+
+# This setting tells Django to use S3 as its default file storage backend
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
 # Application definition
 
@@ -54,7 +69,7 @@ INSTALLED_APPS = [
     'support',
     'properties',
     'sales',
-
+    'storages',
 ]
 
 REST_FRAMEWORK = {

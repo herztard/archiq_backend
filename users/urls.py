@@ -9,9 +9,9 @@ from .views import (
 )
 
 urlpatterns = [
-    path('auth/check-phone/', CheckPhoneView.as_view(), name='check-phone'),
-    path('auth/send-otp/', SendOTPView.as_view(), name='send-otp'),
-    path('auth/verify-otp/', VerifyOTPView.as_view(), name='verify-otp'),
-    path('auth/register/', RegisterUserView.as_view(), name='register'),
-    path("auth/login/", LoginView.as_view(), name="login"),
+    path('accounts/check-phone/', CheckPhoneView.as_view(), name='check-phone'),
+    path('accounts/send-otp/', SendOTPView.as_view(), name='send-otp'),
+    path('accounts/verify-otp/', VerifyOTPView.as_view(), name='verify-otp'),
+    path('accounts/register/', RegisterUserView.as_view(), name='register'),
+    path("accounts/login/", LoginView.as_view(), name="login"),
 ]
