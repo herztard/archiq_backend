@@ -9,7 +9,6 @@ from .models import CustomUser, OneTimePassword
 
 OTP_TTL = timedelta(minutes=10)
 
-
 class PhoneSerializer(serializers.Serializer):
     phone_number = PhoneNumberField(required=True, region='KZ')
 
@@ -18,59 +17,16 @@ class OTPVerifySerializer(serializers.Serializer):
     phone_number = PhoneNumberField(required=True, region='KZ')
     code = serializers.CharField(max_length=6)
 
-    def validate(self, data):
-        cutoff = timezone.now() - OTP_TTL
-        otp_qs = OneTimePassword.objects.filter(
-            phone_number=data['phone_number'],
-            code=data['code'],
-            created_at__gte=cutoff
-        )
-        if not otp_qs.exists():
-            raise serializers.ValidationError("OTP is invalid or has expired.")
-        return data
-
 
 class RegistrationCompleteSerializer(serializers.Serializer):
     phone_number = PhoneNumberField(required=True, region='KZ')
     password = serializers.CharField(write_only=True)
     password2 = serializers.CharField(write_only=True)
 
-    def validate(self, data):
-        if data['password'] != data['password2']:
-            raise serializers.ValidationError("Passwords must match.")
-        if CustomUser.objects.filter(phone_number=data['phone_number']).exists():
-            raise serializers.ValidationError("User already exists.")
-        return data
-
-    def create(self, validated):
-        user = CustomUser.objects.create_user(
-            phone_number=validated['phone_number'],
-            password=validated['password']
-        )
-        return user
-
-    def to_representation(self, instance):
-        token, _ = Token.objects.get_or_create(user=instance)
-        return {'token': token.key}
-
 
 class LoginSerializer(serializers.Serializer):
     phone_number = PhoneNumberField(required=True, region='KZ')
     password = serializers.CharField(write_only=True)
-
-    def validate(self, data):
-        user = authenticate(
-            phone_number=data['phone_number'],
-            password=data['password']
-        )
-        if not user:
-            raise serializers.ValidationError("Invalid credentials.")
-        data['user'] = user
-        return data
-
-    def to_representation(self, validated):
-        token, _ = Token.objects.get_or_create(user=validated['user'])
-        return {'token': token.key}
 
 
 class ForgotPasswordSerializer(serializers.Serializer):
