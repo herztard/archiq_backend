@@ -29,6 +29,7 @@ SECRET_KEY = os.getenv("DHANGO_SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DHANGO_DEBUG", False)
 
+
 hosts_str = os.environ.get('DJANGO_ALLOWED_HOSTS', '')
 ALLOWED_HOSTS = hosts_str.split()
 
