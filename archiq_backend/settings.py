@@ -181,3 +181,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 EMBEDDING_MODEL=os.getenv('EMBEDDING_MODEL')
 LLM_MODEL=os.getenv('LLM_MODEL')
 OPENAI_API_KEY=os.getenv('OPENAI_API_KEY')
+
+CHROMA_DB_PATH=os.getenv('CHROMA_DB_PATH')
