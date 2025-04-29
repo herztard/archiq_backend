@@ -8,9 +8,14 @@ ENV APP_HOME=/code
 RUN mkdir $APP_HOME
 WORKDIR $APP_HOME
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        gcc \
-        libpq-dev \
+RUN apt-get update -y && apt-get install -y gettext  \
+    build-essential  \
+    libssl-dev  \
+    git  \
+    python3-dev  \
+    gcc  \
+    libpq-dev \
+    libffi-dev \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt $APP_HOME

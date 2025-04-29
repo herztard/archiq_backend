@@ -24,10 +24,10 @@ load_dotenv()
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("DHANGO_SECRET_KEY")
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DHANGO_DEBUG", False)
+DEBUG = os.getenv("DJANGO_DEBUG", False)
 
 
 hosts_str = os.environ.get('DJANGO_ALLOWED_HOSTS', '')
@@ -176,3 +176,8 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+EMBEDDING_MODEL=os.getenv('EMBEDDING_MODEL')
+LLM_MODEL=os.getenv('LLM_MODEL')
+OPENAI_API_KEY=os.getenv('OPENAI_API_KEY')
