@@ -2,15 +2,15 @@ version: '3.8'
 
 services:
   db:
-    image: postgres:13
-    container_name: postgres_db
+    image: postgres:17
+    container_name: db
     restart: always
+    env_file:
+      - .env
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-    env_file:
-      - .env
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -19,7 +19,50 @@ services:
   backend:
     build: .
     container_name: backend
-    command: ["sh", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"]
+    command: >
+      sh -c "
+        python manage.py migrate &&
+        python manage.py runserver 0.0.0.0:8000
+      "
+    env_file:
+      - .env
+    environment:
+      # Database
+      DB_NAME:               ${DB_NAME}
+      DB_USER:               ${DB_USER}
+      DB_PASSWORD:           ${DB_PASSWORD}
+      DB_HOST:               ${DB_HOST}        # fixed
+      DB_PORT:               ${DB_PORT}
+
+      # Django
+      DJANGO_SECRET_KEY:     ${DJANGO_SECRET_KEY}
+      DJANGO_ALLOWED_HOSTS:  ${DJANGO_ALLOWED_HOSTS}
+      DJANGO_DEBUG:          ${DJANGO_DEBUG}
+
+      # S3 / Spaces
+      S3_BUCKET_NAME:        ${S3_BUCKET_NAME}
+      S3_ACCESS_KEY:         ${S3_ACCESS_KEY}
+      S3_SECRET_KEY:         ${S3_SECRET_KEY}
+      S3_BUCKET_URL:         ${S3_BUCKET_URL}
+      S3_BUCKET_FULL_URL:    ${S3_BUCKET_FULL_URL}
+      AWS_S3_CUSTOM_DOMAIN:  ${AWS_S3_CUSTOM_DOMAIN}
+
+      # Embedding & LLM
+      EMBEDDING_MODEL:       ${EMBEDDING_MODEL}
+      LLM_MODEL:             ${LLM_MODEL}
+
+      # Chroma
+      CHROMA_DB_PATH:        ${CHROMA_DB_PATH}
+
+      # LangSmith
+      LANGSMITH_TRACING:     ${LANGSMITH_TRACING}
+      LANGSMITH_ENDPOINT:    ${LANGSMITH_ENDPOINT}
+      LANGSMITH_API_KEY:     ${LANGSMITH_API_KEY}
+      LANGSMITH_PROJECT:     ${LANGSMITH_PROJECT}
+
+      # OpenAI
+      OPENAI_API_KEY:        ${OPENAI_API_KEY}
+
     volumes:
       - .:/app
       - static_volume:/app/static
@@ -28,13 +71,6 @@ services:
       - "8000:8000"
     depends_on:
       - db
-    env_file:
-      - .env
-    environment:
-      S3_BUCKET_NAME: ${S3_BUCKET_NAME}
-      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
-      S3_SECRET_KEY: ${S3_SECRET_KEY}
-      S3_BUCKET_URL: ${S3_BUCKET_URL}
 
   nginx:
     image: nginx:latest

@@ -275,6 +275,7 @@ class LoginView(APIView):
             status.HTTP_401_UNAUTHORIZED: "Неверные учётные данные"
         }
     )
+
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         if not serializer.is_valid():

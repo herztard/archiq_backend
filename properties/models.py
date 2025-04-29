@@ -70,10 +70,10 @@ class Block(models.Model):
 
 class Category(models.Model):
     CATEGORY_TYPE_CHOICES = (
-        ("APARTMENT", "Квартира"),
-        ("PARKING", "Паркинг"),
-        ("BOXROOM", "Кладовая"),
-        ("COMMERCE", "Коммерческая недвижимость"),
+        ("APARTMENT", "Apartment"),
+        ("PARKING", "Parking"),
+        ("BOXROOM", "Boxroom"),
+        ("COMMERCE", "Commerce"),
     )
 
     name = models.CharField(max_length=50, choices=CATEGORY_TYPE_CHOICES)
