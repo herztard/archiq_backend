@@ -5,6 +5,7 @@ from django.utils import timezone
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
@@ -13,7 +14,8 @@ import random
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from users.models import CustomUser, OneTimePassword
-from users.serializers import PhoneSerializer, OTPVerifySerializer, RegistrationCompleteSerializer, LoginSerializer
+from users.serializers import PhoneSerializer, OTPVerifySerializer, RegistrationCompleteSerializer, LoginSerializer, \
+    ProfileSerializer
 
 
 # Create your views here.
@@ -299,3 +301,12 @@ class LoginView(APIView):
             },
             status=status.HTTP_200_OK
         )
+
+
+class ProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        serializer = ProfileSerializer(user)
+        return Response(serializer.data)

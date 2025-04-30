@@ -118,8 +118,6 @@ CORS_ALLOWED_ORIGIN_REGEXES = [
 ]
 
 
-
-
 ROOT_URLCONF = 'archiq_backend.urls'
 
 TEMPLATES = [
