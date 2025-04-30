@@ -82,6 +82,7 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./static:/app/staticfiles
+      - /etc/letsencrypt:/etc/letsencrypt:ro # прокинуты SSL-серт
 
 volumes:
   postgres_data:
