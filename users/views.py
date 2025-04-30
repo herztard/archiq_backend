@@ -2,44 +2,33 @@ from datetime import timedelta
 
 from django.contrib.auth import authenticate
 from django.utils import timezone
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
-from rest_framework import status
+from drf_spectacular.utils import extend_schema
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.authtoken.models import Token
+from rest_framework import status
+from rest_framework_simplejwt.tokens import RefreshToken
 import random
 
-from rest_framework_simplejwt.tokens import RefreshToken
-
 from users.models import CustomUser, OneTimePassword
-from users.serializers import PhoneSerializer, OTPVerifySerializer, RegistrationCompleteSerializer, LoginSerializer
+from users.serializers import PhoneSerializer, OTPVerifySerializer, RegistrationCompleteSerializer, LoginSerializer, \
+    ProfileSerializer
 
-
-# Create your views here.
 class CheckPhoneView(APIView):
     permission_classes = []
 
-    @swagger_auto_schema(
-        operation_description="Проверить, существует ли пользователь с данным номером",
-        request_body=PhoneSerializer,
+    @extend_schema(
+        description="Проверить, существует ли пользователь с данным номером",
+        request=PhoneSerializer,
         responses={
-            status.HTTP_200_OK: openapi.Response(
-                description="Результат проверки номера",
-                schema=openapi.Schema(
-                    type=openapi.TYPE_OBJECT,
-                    properties={
-                        "exists": openapi.Schema(
-                            type=openapi.TYPE_BOOLEAN,
-                            description="True, если номер найден в БД"
-                        ),
-                        "next": openapi.Schema(
-                            type=openapi.TYPE_STRING,
-                            description="Следующий шаг: 'login' или 'register'"
-                        )
-                    }
-                )
-            ),
+            status.HTTP_200_OK: {
+                "description": "Результат проверки номера",
+                "type": "object",
+                "properties": {
+                    "exists": {"type": "boolean", "description": "True, если номер найден в БД"},
+                    "next": {"type": "string", "description": "Следующий шаг: 'login' или 'register'"}
+                }
+            },
             status.HTTP_400_BAD_REQUEST: "Некорректный номер телефона"
         }
     )
@@ -61,26 +50,18 @@ class CheckPhoneView(APIView):
 class SendOTPView(APIView):
     permission_classes = []
 
-    @swagger_auto_schema(
-        operation_description="Отправить одноразовый код (OTP) на указанный номер телефона",
-        request_body=PhoneSerializer,
+    @extend_schema(
+        description="Отправить одноразовый код (OTP) на указанный номер телефона",
+        request=PhoneSerializer,
         responses={
-            status.HTTP_200_OK: openapi.Response(
-                description="Код успешно отправлен",
-                schema=openapi.Schema(
-                    type=openapi.TYPE_OBJECT,
-                    properties={
-                        "success": openapi.Schema(
-                            type=openapi.TYPE_BOOLEAN,
-                            description="True, если код успешно отправлен"
-                        ),
-                        "message": openapi.Schema(
-                            type=openapi.TYPE_STRING,
-                            description="Сообщение о результате операции"
-                        )
-                    }
-                )
-            ),
+            status.HTTP_200_OK: {
+                "description": "Код успешно отправлен",
+                "type": "object",
+                "properties": {
+                    "success": {"type": "boolean", "description": "True, если код успешно отправлен"},
+                    "message": {"type": "string", "description": "Сообщение о результате операции"}
+                }
+            },
             status.HTTP_400_BAD_REQUEST: "Некорректный номер телефона"
         }
     )
@@ -90,9 +71,8 @@ class SendOTPView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         phone = serializer.validated_data['phone_number']
-        
         otp_code = ''.join([str(random.randint(0, 9)) for _ in range(6)])
-        
+
         OneTimePassword.objects.create(
             phone_number=phone,
             code=otp_code,
@@ -112,26 +92,18 @@ class SendOTPView(APIView):
 class VerifyOTPView(APIView):
     permission_classes = []
 
-    @swagger_auto_schema(
-        operation_description="Проверить код подтверждения (OTP)",
-        request_body=OTPVerifySerializer,
+    @extend_schema(
+        description="Проверить код подтверждения (OTP)",
+        request=OTPVerifySerializer,
         responses={
-            status.HTTP_200_OK: openapi.Response(
-                description="Результат проверки кода",
-                schema=openapi.Schema(
-                    type=openapi.TYPE_OBJECT,
-                    properties={
-                        "verified": openapi.Schema(
-                            type=openapi.TYPE_BOOLEAN,
-                            description="True, если код верный и не истек срок действия"
-                        ),
-                        "message": openapi.Schema(
-                            type=openapi.TYPE_STRING,
-                            description="Сообщение о результате операции"
-                        )
-                    }
-                )
-            ),
+            status.HTTP_200_OK: {
+                "description": "Результат проверки кода",
+                "type": "object",
+                "properties": {
+                    "verified": {"type": "boolean", "description": "True, если код верный и не истек срок действия"},
+                    "message": {"type": "string", "description": "Сообщение о результате операции"}
+                }
+            },
             status.HTTP_400_BAD_REQUEST: "Некорректные данные или истекший код"
         }
     )
@@ -139,15 +111,15 @@ class VerifyOTPView(APIView):
         serializer = OTPVerifySerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
+
         phone = serializer.validated_data['phone_number']
         code = serializer.validated_data['code']
-        
+
         try:
             otp = OneTimePassword.objects.filter(
                 phone_number=phone
             ).latest('created_at')
-            
+
             if code != str(otp.code):
                 return Response(
                     data={
@@ -156,7 +128,7 @@ class VerifyOTPView(APIView):
                     },
                     status=status.HTTP_400_BAD_REQUEST
                 )
-            
+
             expiry = otp.created_at + timedelta(minutes=1)
             if expiry < timezone.now():
                 return Response(
@@ -188,22 +160,17 @@ class VerifyOTPView(APIView):
 class RegisterUserView(APIView):
     permission_classes = []
 
-    @swagger_auto_schema(
-        operation_description="Зарегистрировать нового пользователя с подтвержденным номером телефона",
-        request_body=RegistrationCompleteSerializer,
+    @extend_schema(
+        description="Зарегистрировать нового пользователя с подтвержденным номером телефона",
+        request=RegistrationCompleteSerializer,
         responses={
-            status.HTTP_201_CREATED: openapi.Response(
-                description="Пользователь успешно зарегистрирован",
-                schema=openapi.Schema(
-                    type=openapi.TYPE_OBJECT,
-                    properties={
-                        "token": openapi.Schema(
-                            type=openapi.TYPE_STRING,
-                            description="Токен авторизации"
-                        )
-                    }
-                )
-            ),
+            status.HTTP_201_CREATED: {
+                "description": "Пользователь успешно зарегистрирован",
+                "type": "object",
+                "properties": {
+                    "token": {"type": "string", "description": "Токен авторизации"}
+                }
+            },
             status.HTTP_400_BAD_REQUEST: "Некорректные данные или пользователь уже существует"
         }
     )
@@ -211,11 +178,11 @@ class RegisterUserView(APIView):
         serializer = RegistrationCompleteSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
+
         phone_number = serializer.validated_data['phone_number']
         password = serializer.validated_data['password']
         password2 = serializer.validated_data['password2']
-        
+
         if password != password2:
             return Response(
                 {
@@ -224,7 +191,7 @@ class RegisterUserView(APIView):
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
+
         if CustomUser.objects.filter(phone_number=phone_number).exists():
             return Response(
                 {
@@ -233,7 +200,7 @@ class RegisterUserView(APIView):
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
+
         user = CustomUser.objects.create_user(
             phone_number=phone_number,
             password=password
@@ -252,30 +219,21 @@ class RegisterUserView(APIView):
 class LoginView(APIView):
     permission_classes = []
 
-    @swagger_auto_schema(
-        operation_description="Войти по номеру телефона и паролю, получить JWT-токены",
-        request_body=LoginSerializer,
+    @extend_schema(
+        description="Войти по номеру телефона и паролю, получить JWT-токены",
+        request=LoginSerializer,
         responses={
-            status.HTTP_200_OK: openapi.Response(
-                description="Успешная аутентификация",
-                schema=openapi.Schema(
-                    type=openapi.TYPE_OBJECT,
-                    properties={
-                        "refresh": openapi.Schema(
-                            type=openapi.TYPE_STRING,
-                            description="JWT Refresh Token"
-                        ),
-                        "access": openapi.Schema(
-                            type=openapi.TYPE_STRING,
-                            description="JWT Access Token"
-                        ),
-                    }
-                )
-            ),
+            status.HTTP_200_OK: {
+                "description": "Успешная аутентификация",
+                "type": "object",
+                "properties": {
+                    "refresh": {"type": "string", "description": "JWT Refresh Token"},
+                    "access": {"type": "string", "description": "JWT Access Token"}
+                }
+            },
             status.HTTP_401_UNAUTHORIZED: "Неверные учётные данные"
         }
     )
-
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         if not serializer.is_valid():
@@ -299,3 +257,12 @@ class LoginView(APIView):
             },
             status=status.HTTP_200_OK
         )
+
+
+class ProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        serializer = ProfileSerializer(user)
+        return Response(serializer.data)

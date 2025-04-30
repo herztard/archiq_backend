@@ -76,3 +76,9 @@ class ResetPasswordSerializer(serializers.Serializer):
         self.user.set_password(self.validated_data['password'])
         self.user.save()
         return self.user
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ('id', 'phone_number', 'first_name', 'last_name')

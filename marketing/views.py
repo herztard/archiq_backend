@@ -1,5 +1,6 @@
 from django.http import Http404
 from django.utils import timezone
+from drf_spectacular.utils import extend_schema
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
@@ -27,8 +28,8 @@ class BannerListCreateView(ActionMixin, APIView):
     parser_classes = [MultiPartParser, FormParser]
     permission_classes = [AllowAnyListGet]
 
-    @swagger_auto_schema(
-        operation_description="Получить список всех баннеров",
+    @extend_schema(
+        description="Получить список всех баннеров",
         responses={status.HTTP_200_OK: BannerSerializer(many=True)},
     )
     def get(self, request):
@@ -37,10 +38,10 @@ class BannerListCreateView(ActionMixin, APIView):
         serializer = BannerSerializer(banners, many=True)
         return Response(serializer.data)
 
-    @swagger_auto_schema(
-        operation_description="Создать новый баннер (multipart/form-data)",
-        request_body=BannerCreateSerializer,
-        response={status.HTTP_201_CREATED: BannerSerializer},
+    @extend_schema(
+        description="Создать новый баннер (multipart/form-data)",
+        request=BannerCreateSerializer,
+        responses={status.HTTP_201_CREATED: BannerSerializer},
     )
     def post(self, request):
         create_serializer = BannerCreateSerializer(data=request.data)
@@ -78,26 +79,26 @@ class BannerDetailView(APIView):
         except Banner.DoesNotExist:
             raise Http404
 
-    @swagger_auto_schema(
-        operation_description="Получить конкретный баннер",
-        response={status.HTTP_200_OK: BannerSerializer},
+    @extend_schema(
+        description="Получить конкретный баннер",
+        responses={status.HTTP_200_OK: BannerSerializer},
     )
     def get(self, request, pk):
         banner = self.get_object(pk)
         return Response(BannerSerializer(banner).data)
 
-    @swagger_auto_schema(
-        operation_description="Полностью обновить баннер",
-        request_body=BannerCreateSerializer,
-        response={status.HTTP_200_OK: BannerSerializer},
+    @extend_schema(
+        description="Полностью обновить баннер",
+        request=BannerCreateSerializer,
+        responses={status.HTTP_200_OK: BannerSerializer},
     )
     def put(self, request, pk):
         return self._update(request, pk, partial=False)
 
-    @swagger_auto_schema(
-        operation_description="Частично обновить баннер",
-        request_body=BannerCreateSerializer,
-        response={status.HTTP_200_OK: BannerSerializer},
+    @extend_schema(
+        description="Частично обновить баннер",
+        request=BannerCreateSerializer,
+        responses={status.HTTP_200_OK: BannerSerializer},
     )
     def patch(self, request, pk):
         return self._update(request, pk, partial=True)
