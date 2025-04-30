@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema_field, OpenApiTypes
 from rest_framework import serializers
 from .models import Banner
 
