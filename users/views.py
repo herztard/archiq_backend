@@ -41,6 +41,7 @@ class CheckPhoneView(APIView):
         exists = CustomUser.objects.filter(phone_number=phone).exists()
         action = 'login' if exists else 'register'
 
+
         return Response(
             {"exists": exists, "next": action},
             status=status.HTTP_200_OK
