@@ -33,4 +33,6 @@ urlpatterns = [
 
     path('', include('users.urls')),
     path('', include('marketing.urls')),
+    path('', include('properties.urls')),
+    path('', include('location.urls')),
 ]

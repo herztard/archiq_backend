@@ -168,7 +168,8 @@ class RegisterUserView(APIView):
                 "description": "Пользователь успешно зарегистрирован",
                 "type": "object",
                 "properties": {
-                    "token": {"type": "string", "description": "Токен авторизации"}
+                    "refresh": {"type": "string", "description": "JWT Refresh Token"},
+                    "access": {"type": "string", "description": "JWT Access Token"}
                 }
             },
             status.HTTP_400_BAD_REQUEST: "Некорректные данные или пользователь уже существует"
@@ -182,6 +183,8 @@ class RegisterUserView(APIView):
         phone_number = serializer.validated_data['phone_number']
         password = serializer.validated_data['password']
         password2 = serializer.validated_data['password2']
+        first_name = serializer.validated_data.get('first_name', '')
+        last_name = serializer.validated_data.get('last_name', '')
 
         if password != password2:
             return Response(
@@ -203,7 +206,9 @@ class RegisterUserView(APIView):
 
         user = CustomUser.objects.create_user(
             phone_number=phone_number,
-            password=password
+            password=password,
+            first_name=first_name,
+            last_name=last_name
         )
 
         refresh = RefreshToken.for_user(user)
@@ -262,7 +267,29 @@ class LoginView(APIView):
 class ProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        description="Получить данные профиля текущего пользователя",
+        responses={status.HTTP_200_OK: ProfileSerializer}
+    )
     def get(self, request):
         user = request.user
         serializer = ProfileSerializer(user)
         return Response(serializer.data)
+    
+    @extend_schema(
+        description="Обновить данные профиля текущего пользователя",
+        request=ProfileSerializer,
+        responses={
+            status.HTTP_200_OK: ProfileSerializer,
+            status.HTTP_400_BAD_REQUEST: "Incorrect data"
+        }
+    )
+    def patch(self, request):
+        user = request.user
+        serializer = ProfileSerializer(user, data=request.data, partial=True)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

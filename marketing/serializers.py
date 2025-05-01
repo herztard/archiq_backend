@@ -1,9 +1,11 @@
-from drf_spectacular.utils import extend_schema_field, OpenApiTypes
 from rest_framework import serializers
 from .models import Banner
 
 class BannerCreateSerializer(serializers.ModelSerializer):
-    image = serializers.ImageField(write_only=True)
+    image = serializers.ImageField(
+        write_only=True,
+        help_text="Banner image. Available extensions: JPG, JPEG, PNG, GIF, WEBP."
+    )
 
     class Meta:
         model = Banner

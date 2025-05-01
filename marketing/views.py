@@ -5,17 +5,12 @@ from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework import status
-from drf_yasg.utils import swagger_auto_schema
 
 from .models import Banner
 from .serializers import BannerCreateSerializer, BannerSerializer
 from .permissions import AllowAnyListGet, IsAdminOrManager
 from clients.s3 import S3Client, generate_unique_filename
-from archiq_backend.settings import (
-    AWS_S3_ENDPOINT_URL,
-    AWS_STORAGE_BUCKET_NAME,
-    AWS_S3_CUSTOM_DOMAIN, AWS_S3_FULL_URL,
-)
+from django.conf import settings
 
 class ActionMixin:
     def initial(self, request, *args, **kwargs):
@@ -24,6 +19,7 @@ class ActionMixin:
         else:
             self.action = None
         return super().initial(request, *args, **kwargs)
+    
 class BannerListCreateView(ActionMixin, APIView):
     parser_classes = [MultiPartParser, FormParser]
     permission_classes = [AllowAnyListGet]
@@ -60,11 +56,15 @@ class BannerListCreateView(ActionMixin, APIView):
             )
 
         unique_name = generate_unique_filename(image_file.name)
-        destination = f"{AWS_S3_FULL_URL}/banner/{unique_name}"
+        destination = f"banner/{unique_name}"
+        
         s3 = S3Client()
         image_file.seek(0)
         s3.upload_to_s3(file_content=image_file.read(), destination_blob_name=destination)
-        banner = Banner.objects.create(image_link=destination, **data)
+        
+        image_link = f"{settings.AWS_S3_FULL_URL}/{destination}"
+        
+        banner = Banner.objects.create(image_link=image_link, **data)
         out = BannerSerializer(banner)
         return Response(out.data, status=status.HTTP_201_CREATED)
 
@@ -95,14 +95,6 @@ class BannerDetailView(APIView):
     def put(self, request, pk):
         return self._update(request, pk, partial=False)
 
-    @extend_schema(
-        description="Частично обновить баннер",
-        request=BannerCreateSerializer,
-        responses={status.HTTP_200_OK: BannerSerializer},
-    )
-    def patch(self, request, pk):
-        return self._update(request, pk, partial=True)
-
     def _update(self, request, pk, partial):
         banner = self.get_object(pk)
         create_ser = BannerCreateSerializer(data=request.data, partial=partial)
@@ -112,17 +104,16 @@ class BannerDetailView(APIView):
         data = create_ser.validated_data
         if "image" in data:
             image_file = data.pop("image")
+            
             unique_name = generate_unique_filename(image_file.name)
-            S3Client().upload_to_s3(image_file.read(), unique_name)
-            if AWS_S3_CUSTOM_DOMAIN:
-                data["image_link"] = f"https://{AWS_S3_CUSTOM_DOMAIN}/banner/{unique_name}"
-            else:
-                data["image_link"] = (
-                    f"{AWS_S3_ENDPOINT_URL.rstrip('/')}/"
-                    f"{AWS_STORAGE_BUCKET_NAME}/{unique_name}"
-                )
+            destination = f"banner/{unique_name}"
+            
+            s3 = S3Client()
+            image_file.seek(0)
+            s3.upload_to_s3(file_content=image_file.read(), destination_blob_name=destination)
+            
+            data["image_link"] = f"{settings.AWS_S3_FULL_URL}/{destination}"
 
-        # copy other fields onto the instance
         for attr, val in data.items():
             setattr(banner, attr, val)
         banner.save()

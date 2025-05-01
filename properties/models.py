@@ -6,35 +6,41 @@ from location.models import District
 # Create your models here.
 class ResidentialComplex(models.Model):
     CLASS_TYPE_CHOICES = (
-        ("STANDARD", "Стандарт"),
-        ("COMFORT", 'Комфорт'),
-        ("BUSINESS", 'Бизнес'),
-        ("PREMIUM", "Премиум")
+        ("STANDARD", "Standard"),
+        ("COMFORT", 'Comfort'),
+        ("BUSINESS", 'Business'),
+        ("PREMIUM", "Premium")
     )
 
     HEATING_TYPE_CHOICES = (
-        ("GAS", "Газовое"),
-        ("ELECTRIC", "Электрическое"),
-        ("CENTRAL", "Центральное")
+        ("GAS", "Gas heating"),
+        ("ELECTRIC", "Electric heating"),
+        ("CENTRAL", "Central heating")
+    )
+
+    CONSTRUCTION_TECHNOLOGY_CHOICES = (
+        ("MONOLITHIC", "Monolithic"),
+        ("PRECAST LARGE-PANEL", "Precast large-panel"),
+        ("MASONRY", "Masonry"),
     )
 
     district = models.ForeignKey(District, on_delete=models.CASCADE, related_name="residential_complexes")
     name = models.CharField(max_length=255)
     address = models.TextField()
     class_type = models.CharField(choices=CLASS_TYPE_CHOICES, max_length=255)
-    construction_technology = models.CharField(max_length=100)
+    construction_technology = models.CharField(max_length=100, choices=CONSTRUCTION_TECHNOLOGY_CHOICES)
     heating_type = models.CharField(max_length=255, choices=HEATING_TYPE_CHOICES)
     has_elevator_pass = models.BooleanField(default=False)
     has_elevator_cargo = models.BooleanField(default=False)
     ceiling_height = models.DecimalField(max_digits=5, decimal_places=2)
     block_number = models.IntegerField()
-    down_payment = models.DecimalField(max_digits=10, decimal_places=2)
-    installment_plan = models.CharField(max_length=50)
-    latitude = models.DecimalField(max_digits=10, decimal_places=6)
-    longitude = models.DecimalField(max_digits=10, decimal_places=6)
-    link_on_map = models.URLField()
-    description_full = models.TextField()
-    description_short = models.CharField(max_length=255)
+    down_payment = models.DecimalField(max_digits=10, decimal_places=2, null=True)
+    installment_plan = models.CharField(max_length=50, null=True)
+    latitude = models.DecimalField(max_digits=10, decimal_places=6, null=True)
+    longitude = models.DecimalField(max_digits=10, decimal_places=6, null=True)
+    link_on_map = models.URLField(null=True)
+    description_full = models.TextField(null=True)
+    description_short = models.CharField(max_length=255, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -43,11 +49,23 @@ class ResidentialComplex(models.Model):
     class Meta:
         db_table = "residential_complexes"
 
+
+class ResidentialComplexPhotos(models.Model):
+    complex = models.ForeignKey(ResidentialComplex, on_delete=models.CASCADE, related_name="residential_complex_photos")
+    photo_link = models.URLField()
+
+    def __str__(self):
+        return f"Photo {self.photo_link} for {self.complex}"
+
+    class Meta:
+        db_table = "residential_complex_photos"
+
+
 class Block(models.Model):
     BUILDING_STATUS_CHOICES = (
-        ("EXСAVATION", "На стадии котлована"),
-        ("UNDER CONSTRUCTION", "Строится"),
-        ("COMPLETED", "Постройка завершена")
+        ("EXСAVATION", "At the excavation stage"),
+        ("UNDER CONSTRUCTION", "Under construction"),
+        ("COMPLETED", "The construction is completed")
     )
 
     complex = models.ForeignKey(ResidentialComplex, on_delete=models.CASCADE, related_name="blocks")
@@ -68,7 +86,7 @@ class Block(models.Model):
         db_table = "blocks"
 
 
-class Category(models.Model):
+class Property(models.Model):
     CATEGORY_TYPE_CHOICES = (
         ("APARTMENT", "Apartment"),
         ("PARKING", "Parking"),
@@ -76,17 +94,8 @@ class Category(models.Model):
         ("COMMERCE", "Commerce"),
     )
 
-    name = models.CharField(max_length=50, choices=CATEGORY_TYPE_CHOICES)
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        db_table = "property_categories"
-
-
-class Property(models.Model):
     block = models.ForeignKey(Block, on_delete=models.CASCADE, related_name="properties")
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="properties")
+    category = models.CharField(max_length=50, choices=CATEGORY_TYPE_CHOICES)
     number = models.IntegerField(null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, null=True)
     price_per_sqm = models.DecimalField(max_digits=10, decimal_places=2, null=True)
@@ -100,8 +109,13 @@ class Property(models.Model):
     description = models.TextField(null=True, blank=True)
     entrance = models.IntegerField(null=True, blank=True)
 
+    def save(self, *args, **kwargs):
+        if self.area is not None and self.price_per_sqm is not None:
+            self.price = self.area * self.price_per_sqm
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return f"{self.category.name} #{self.number} в {self.block.complex.name}, к{self.block.block_number}"
+        return f"{self.category} #{self.number} в {self.block.complex.name}, к{self.block.block_number}"
 
     class Meta:
         db_table = "properties"
@@ -111,7 +125,7 @@ class PropertyPhotos(models.Model):
     photo_link = models.URLField()
 
     def __str__(self):
-        return f"Photo {self.photo_link} for {self.property}"
+        return f"{self.photo_link}"
 
     class Meta:
         db_table = "property_photos"
@@ -124,4 +138,4 @@ class PropertyVideos(models.Model):
         db_table = "property_videos"
 
     def __str__(self):
-        return f"Video {self.video_link} for {self.property}"
+        return f"{self.video_link}"

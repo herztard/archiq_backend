@@ -7,16 +7,16 @@ from properties.models import Property
 # Create your models here.
 class PropertyPurchase(models.Model):
     STATUS_CHOICES = (
-        ("PENDING", "В ожидании"),
-        ("RESERVED", "Забронировано"),
-        ("PAID", "Оплачено"),
-        ("CANCELED", "Отменено"),
-        ("COMPLETED", "Завершено"),
+        ("PENDING", "Pending"),
+        ("RESERVED", "Reserved"),
+        ("PAID", "Paid"),
+        ("CANCELED", "Canceled"),
+        ("COMPLETED", "Completed"),
     )
 
     PURPOSE_CHOICES = (
-        ("BUYING", "Покупка"),
-        ("RENTING", "Аренда"),
+        ("BUYING", "Buying"),
+        ("RENTING", "Renting"),
     )
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='property_purchases')
@@ -25,7 +25,7 @@ class PropertyPurchase(models.Model):
     purchase_purpose = models.CharField(max_length=50, choices=PURPOSE_CHOICES, default=PURPOSE_CHOICES[0][0])
 
     def __str__(self):
-        return f"{self.user} приобретает {self.property}"
+        return f"{self.user} purchases {self.property}"
 
     class Meta:
         db_table = "property_purchases"
