@@ -23,15 +23,21 @@ jobs:
       #          python -m pip install --upgrade pip
       #          pip install -r requirements.txt
 
-      - name: Set up SSH agent
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      #      - name: Set up SSH agent
+      #        uses: webfactory/ssh-agent@v0.9.0
+      #        with:
+      #          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Setup SSH
         run: |
+          eval $(ssh-agent)
+
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
+          ssh-add - <<< ${{ secrets.SSH_PRIVATE_KEY }}
+
+          ls ~/.ssh
+
           ssh-keyscan -t rsa -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
           ls ~/.ssh
           cat ~/.ssh/known_hosts
