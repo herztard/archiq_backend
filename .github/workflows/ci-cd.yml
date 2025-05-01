@@ -24,16 +24,20 @@ jobs:
       #          pip install -r requirements.txt
 
       - name: Set up SSH agent
-        uses: webfactory/ssh-agent@v0.5.4
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y)
+          eval $(ssh-agent -s)
+          ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
+
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
 
       - name: List SSH keys in agent
         run: ssh-add -l
 
       - name: Check SSH connectivity
         run: |
-          ssh-keyscan -H ${{ secrets.VPS_HOST }}
           ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} echo "SSH OK"
 
       - name: Deploy to production
