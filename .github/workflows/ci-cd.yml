@@ -32,7 +32,7 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
-          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -t rsa -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
           cat ~/.ssh/known_hosts
 
       - name: Check SSH connectivity
