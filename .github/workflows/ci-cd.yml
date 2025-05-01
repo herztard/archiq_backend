@@ -31,12 +31,17 @@ jobs:
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
-          ssh-keyscan ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -t rsa -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts
+
+      - uses: tanmancan/action-setup-ssh-agent-key@1.0.0
+        with:
+          ssh-private-key: ${{ secrets.PRIVATE_KEY_ONE }}
+        run: ssh -T ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} echo "SSH OK"
 
       - name: Check SSH connectivity
         run: |
-          ssh -vvv ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} echo "SSH OK"
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} echo "SSH OK"
 
       - name: Deploy to production
         if: github.ref == 'refs/heads/main'
