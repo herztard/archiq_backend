@@ -23,29 +23,19 @@ jobs:
       #          python -m pip install --upgrade pip
       #          pip install -r requirements.txt
 
-      #      - name: Set up SSH agent
-      #        uses: webfactory/ssh-agent@v0.9.0
-      #        with:
-      #          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Set up SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Setup SSH
         run: |
-          eval $(ssh-agent)
-
           mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          ssh-add - <<< ${{ secrets.SSH_PRIVATE_KEY }}
-
-          ls ~/.ssh
-
-          ssh-keyscan -t rsa -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
-          ls ~/.ssh
-          cat ~/.ssh/known_hosts
+          ssh-keyscan ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
 
       - name: Check SSH connectivity
         run: |
-          ls ~/.ssh
-          cat ~/.ssh/known_hosts
           ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} echo "SSH OK"
 
       - name: Deploy to production
@@ -56,3 +46,4 @@ jobs:
             git pull origin main
             docker compose -f docker-compose.yml down
             docker compose -f docker-compose.yml up -d --build
+          EOF
