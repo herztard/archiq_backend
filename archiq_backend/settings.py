@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 from pathlib import Path
 from dotenv import load_dotenv
 from pip._internal import locations
@@ -6,7 +7,6 @@ from pip._internal import locations
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv()
 
-# Quick-start development settings - unsuitable for production
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 DEBUG = os.getenv("DJANGO_DEBUG", False)
 hosts_str = os.environ.get('DJANGO_ALLOWED_HOSTS', '')
@@ -104,7 +104,6 @@ WSGI_APPLICATION = 'archiq_backend.wsgi.application'
 
 AUTH_USER_MODEL = 'users.CustomUser'
 
-# Database settings...
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -116,7 +115,6 @@ DATABASES = {
     }
 }
 
-# Password validation...
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -131,6 +129,11 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(weeks=1),
+    "REFRESH_TOKEN_LIFETIME": timedelta(weeks=52)
+}
 
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
@@ -147,13 +150,11 @@ STATIC_ROOT = '/app/static'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Environment Variables for Models
 EMBEDDING_MODEL = os.getenv('EMBEDDING_MODEL')
 LLM_MODEL = os.getenv('LLM_MODEL')
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 CHROMA_DB_PATH = os.getenv('CHROMA_DB_PATH')
 
-# Spectacular Settings for OpenAPI
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Archiq API',
     'DESCRIPTION': 'Archiq API documentation',
@@ -162,7 +163,7 @@ SPECTACULAR_SETTINGS = {
     'COMPONENT_SPLIT_REQUEST': True,
     'SECURITY': [{'BearerAuth': []}],
     "SWAGGER_UI_SETTINGS": {
-        "filter": True,  # включить поиск по тегам
+        "filter": True,
     },
     'SECURITY_SCHEMES': {
         'BearerAuth': {

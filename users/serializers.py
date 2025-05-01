@@ -22,6 +22,8 @@ class RegistrationCompleteSerializer(serializers.Serializer):
     phone_number = PhoneNumberField(required=True, region='KZ')
     password = serializers.CharField(write_only=True)
     password2 = serializers.CharField(write_only=True)
+    first_name = serializers.CharField(required=False, allow_blank=True)
+    last_name = serializers.CharField(required=False, allow_blank=True)
 
 
 class LoginSerializer(serializers.Serializer):
@@ -58,7 +60,6 @@ class ResetPasswordSerializer(serializers.Serializer):
     password2 = serializers.CharField(write_only=True)
 
     def __init__(self, *args, **kwargs):
-        # Expect context['request'].user
         super().__init__(*args, **kwargs)
         self.user = self.context['request'].user
 
