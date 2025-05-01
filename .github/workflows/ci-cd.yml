@@ -26,12 +26,12 @@ jobs:
 
       - name: Check SSH connectivity
         run: |
-          echo ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} echo "SSH OK"
+          ssh -T ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} echo "SSH OK"
 
       - name: Deploy to production
         if: github.ref == 'refs/heads/main'
         run: |
-          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+          ssh -T ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
             cd archiq_backend
             git pull origin main
             docker compose -f docker-compose.yml down
