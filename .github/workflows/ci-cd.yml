@@ -36,7 +36,7 @@ jobs:
 
       - name: Check SSH connectivity
         run: |
-          ssh -T -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} echo "SSH OK"
+          ssh -vvv ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} echo "SSH OK"
 
       - name: Deploy to production
         if: github.ref == 'refs/heads/main'
