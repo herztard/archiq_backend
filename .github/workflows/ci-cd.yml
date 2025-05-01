@@ -38,6 +38,8 @@ jobs:
 
       - name: Check SSH connectivity
         run: |
+          ls ~/.ssh
+          cat ~/.ssh/known_hosts
           ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} echo "SSH OK"
 
       - name: Deploy to production
