@@ -7,6 +7,7 @@ from pip._internal import locations
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv()
 
+
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 DEBUG = os.getenv("DJANGO_DEBUG", False)
 hosts_str = os.environ.get('DJANGO_ALLOWED_HOSTS', '')
@@ -174,4 +175,6 @@ SPECTACULAR_SETTINGS = {
         }
     }
 }
+
+
 
