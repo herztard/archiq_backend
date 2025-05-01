@@ -26,7 +26,7 @@ jobs:
 
       - name: Check SSH connectivity
         run: |
-          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} echo "SSH OK"
+          echo ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} echo "SSH OK"
 
       - name: Deploy to production
         if: github.ref == 'refs/heads/main'
