@@ -8,6 +8,6 @@ class CityAdmin(admin.ModelAdmin):
 
 @admin.register(District)
 class DistrictAdmin(admin.ModelAdmin):
-    list_display  = ('name', 'city',)
+    list_display  = ('name', 'city')
     list_filter   = ('city',)
     search_fields = ('name',)
