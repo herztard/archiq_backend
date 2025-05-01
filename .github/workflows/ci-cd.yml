@@ -24,7 +24,7 @@ jobs:
       #          pip install -r requirements.txt
 
       - name: Set up SSH agent
-        uses: webfactory/ssh-agent@v0.9.0
+        uses: tanmancan/action-setup-ssh-agent-key@1.0.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
@@ -33,11 +33,6 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -t rsa -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts
-
-      - uses: tanmancan/action-setup-ssh-agent-key@1.0.0
-        with:
-          ssh-private-key: ${{ secrets.PRIVATE_KEY_ONE }}
-        run: ssh -T ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} echo "SSH OK"
 
       - name: Check SSH connectivity
         run: |
