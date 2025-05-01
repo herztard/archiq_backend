@@ -296,6 +296,7 @@ class ProfileView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+
 class HealthCheckView(APIView):
     def get(self, request):
         return Response({"status": "running"}, status=status.HTTP_200_OK)
