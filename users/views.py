@@ -89,7 +89,6 @@ class SendOTPView(APIView):
             status=status.HTTP_200_OK
         )
 
-
 class VerifyOTPView(APIView):
     permission_classes = []
 
