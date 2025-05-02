@@ -14,6 +14,7 @@ from users.models import CustomUser, OneTimePassword
 from users.serializers import PhoneSerializer, OTPVerifySerializer, RegistrationCompleteSerializer, LoginSerializer, \
     ProfileSerializer
 
+
 class CheckPhoneView(APIView):
     permission_classes = []
 
