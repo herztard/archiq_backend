@@ -30,6 +30,7 @@ Deprecated==1.2.18
 dirtyjson==1.0.8
 distro==1.9.0
 Django==5.2
+django-cors-headers==4.7.0
 django-phonenumber-field==8.1.0
 django-s3-storage==0.15.0
 django-storages==1.14.6

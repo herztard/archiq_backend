@@ -87,6 +87,16 @@ CORS_ORIGIN_WHITELIST = (
     'https://www.slyamgazy.kz',
 )
 
+from corsheaders.defaults import default_methods, default_headers
+
+CORS_ALLOW_METHODS = list(default_methods) + [
+    'OPTIONS',
+]
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    'content-type',
+    'authorization',
+]
+
 ROOT_URLCONF = 'archiq_backend.urls'
 TEMPLATES = [
     {
