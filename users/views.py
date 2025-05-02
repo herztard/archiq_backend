@@ -220,7 +220,6 @@ class RegisterUserView(APIView):
             status=status.HTTP_201_CREATED
         )
 
-
 class LoginView(APIView):
     permission_classes = []
 
