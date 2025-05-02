@@ -57,6 +57,7 @@ REST_FRAMEWORK = {
 }
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -73,7 +74,6 @@ CSRF_TRUSTED_ORIGINS = [
     'https://slyamgazy.kz',
     'https://api.slyamgazy.kz',
     'https://www.slyamgazy.kz',
-    '*'
 ]
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_ALL_ORIGINS = True
@@ -83,7 +83,6 @@ CORS_ORIGIN_WHITELIST = (
     "http://127.0.0.1:5173",
     'https://slyamgazy.kz',
     'https://www.slyamgazy.kz',
-    '*'
 )
 
 ROOT_URLCONF = 'archiq_backend.urls'
