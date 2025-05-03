@@ -32,7 +32,7 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: |
           ssh -T ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
-            cd archiq_backend
+            cd /opt/archiq/archiq_backend
             git pull --rebase origin main
             docker compose -f docker-compose.yml up --detach --build
           EOF
