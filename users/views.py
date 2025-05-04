@@ -296,5 +296,7 @@ class ProfileView(APIView):
 
 
 class HealthCheckView(APIView):
+    permission_classes = []
+
     def get(self, request):
         return Response({"status": "running"}, status=status.HTTP_200_OK)
