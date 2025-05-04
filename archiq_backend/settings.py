@@ -84,6 +84,10 @@ CSRF_TRUSTED_ORIGINS = [
     'https://slyamgazy.kz',
     'https://api.slyamgazy.kz',
     'https://www.slyamgazy.kz',
+    '212.45.80.211:8080',
+    '91.231.66.140:8080',
+    '212.45.80.211:5173',
+    '91.231.66.140:5173',
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True
@@ -95,6 +99,10 @@ CORS_ORIGIN_WHITELIST = (
     "http://127.0.0.1:8080",
     'https://slyamgazy.kz',
     'https://www.slyamgazy.kz',
+    '212.45.80.211:8080',
+    '91.231.66.140:8080',
+    '212.45.80.211:5173',
+    '91.231.66.140:5173',
 )
 
 from corsheaders.defaults import default_methods, default_headers
