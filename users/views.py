@@ -312,10 +312,9 @@ class UserPropertiesView(APIView):
         responses={200: PropertySerializer(many=True)}
     )
     def get(self, request):
-        # Get properties owned by the user through PropertyPurchase model
         user_properties = Property.objects.filter(
             property_purchases__user=request.user,
-            property_purchases__status__in=['PAID', 'COMPLETED']  # Only include properties with completed purchases
+            property_purchases__status__in=['PAID', 'COMPLETED']
         ).distinct()
         
         serializer = PropertySerializer(user_properties, many=True)

@@ -77,14 +77,6 @@ class StandardResultsSetPagination(PageNumberPagination):
     )
 )
 class ApplicationCreateView(generics.CreateAPIView):
-    """
-    API view for creating applications. Handles both authenticated and unauthenticated users.
-    
-    For authenticated users: Uses token authentication and links to existing user.
-    For unauthenticated users: Requires name and phone_number.
-    
-    Both cases can optionally include property or residential_complex IDs.
-    """
     permission_classes = [AllowAny]
     serializer_class = UnauthenticatedApplicationSerializer
     

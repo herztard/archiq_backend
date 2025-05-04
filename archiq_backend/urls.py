@@ -36,4 +36,5 @@ urlpatterns = [
     path('', include('properties.urls')),
     path('', include('location.urls')),
     path('applications/', include('applications.urls')),
+    path('support/', include('support.urls')),
 ]
