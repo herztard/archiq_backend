@@ -79,15 +79,15 @@ MIDDLEWARE = [
 
 # CSRF, CORS, and static files settings...
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:8080",
-    "http://127.0.0.1:8080",
+    'http://localhost:8080',
+    'http://127.0.0.1:8080',
     'https://slyamgazy.kz',
     'https://api.slyamgazy.kz',
     'https://www.slyamgazy.kz',
-#    '212.45.80.211:8080',
-#    '91.231.66.140:8080',
-#    '212.45.80.211:5173',
-#    '91.231.66.140:5173',
+    'http://212.45.80.211:8080',
+    'http://91.231.66.140:8080',
+    'http://212.45.80.211:5173',
+    'http://91.231.66.140:5173',
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True
@@ -95,14 +95,14 @@ CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ORIGIN_WHITELIST = (
-    "http://localhost:8080",
-    "http://127.0.0.1:8080",
+    'http://localhost:8080',
+    'http://127.0.0.1:8080',
     'https://slyamgazy.kz',
     'https://www.slyamgazy.kz',
-#    '212.45.80.211:8080',
-#    '91.231.66.140:8080',
-#    '212.45.80.211:5173',
-#    '91.231.66.140:5173',
+    'http://212.45.80.211:8080',
+    'http://91.231.66.140:8080',
+    'http://212.45.80.211:5173',
+    'http://91.231.66.140:5173',
 )
 
 from corsheaders.defaults import default_methods, default_headers
