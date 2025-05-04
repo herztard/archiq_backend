@@ -284,9 +284,9 @@ class PropertyListView(APIView):
     
     @extend_schema(
         parameters=[
-            OpenApiParameter(name="block_id", description="Filter by block ID", type=OpenApiTypes.INT, required=False),
             OpenApiParameter(name="complex_id", description="Filter by residential complex ID", type=OpenApiTypes.INT, required=False),
             OpenApiParameter(name="category", description="Filter by property category (APARTMENT, PARKING, BOXROOM, COMMERCE)", type=str, enum=["APARTMENT", "PARKING", "BOXROOM", "COMMERCE"], required=False),
+            OpenApiParameter(name="class_type", description="Filter by class type (for APARTMENT category)", type=str, enum=["STANDARD", "COMFORT", "BUSINESS", "PREMIUM"], required=False),
             OpenApiParameter(name="min_price", description="Filter by minimum price", type=OpenApiTypes.NUMBER, required=False),
             OpenApiParameter(name="max_price", description="Filter by maximum price", type=OpenApiTypes.NUMBER, required=False),
             OpenApiParameter(name="min_area", description="Filter by minimum area", type=OpenApiTypes.NUMBER, required=False),
@@ -301,18 +301,19 @@ class PropertyListView(APIView):
         queryset = queryset.exclude(
             property_purchases__status__in=['PAID', 'RESERVED', 'COMPLETED']
         )
-        
-        block_id = request.query_params.get('block_id')
-        if block_id and block_id.isdigit():
-            queryset = queryset.filter(block_id=int(block_id))
             
         complex_id = request.query_params.get('complex_id')
         if complex_id and complex_id.isdigit():
             queryset = queryset.filter(block__complex_id=int(complex_id))
             
-        category = request.query_params.get('category')
+        category = request.query_params.get('category', 'APARTMENT')
         if category:
             queryset = queryset.filter(category=category)
+            
+            if category == 'APARTMENT':
+                class_type = request.query_params.get('class_type')
+                if class_type:
+                    queryset = queryset.filter(block__complex__class_type=class_type)
             
         min_price = request.query_params.get('min_price')
         max_price = request.query_params.get('max_price')
@@ -332,8 +333,47 @@ class PropertyListView(APIView):
         if rooms and rooms.isdigit():
             queryset = queryset.filter(rooms=int(rooms))
             
+        metadata = self.get_filter_metadata(request, queryset)
+        
         serializer = PropertySerializer(queryset, many=True)
-        return Response(serializer.data)
+        return Response({
+            'results': serializer.data,
+            'metadata': metadata
+        })
+    
+    def get_filter_metadata(self, request, filtered_properties):
+        metadata = {}
+        
+        # Get aggregate data
+        metadata.update({
+            'min_total_price': filtered_properties.aggregate(Min('price'))['price__min'],
+            'max_total_price': filtered_properties.aggregate(Max('price'))['price__max'],
+            'min_price_per_sqm': filtered_properties.aggregate(Min('price_per_sqm'))['price_per_sqm__min'],
+            'max_price_per_sqm': filtered_properties.aggregate(Max('price_per_sqm'))['price_per_sqm__max'],
+            'min_area': filtered_properties.aggregate(Min('area'))['area__min'],
+            'max_area': filtered_properties.aggregate(Max('area'))['area__max'],
+            'min_floor': filtered_properties.aggregate(Min('floor'))['floor__min'],
+            'max_floor': filtered_properties.aggregate(Max('floor'))['floor__max'],
+            'available_properties_count': filtered_properties.count()
+        })
+        
+        # Get available residential complexes
+        available_complex_ids = filtered_properties.values_list('block__complex_id', flat=True).distinct()
+        available_complexes = ResidentialComplex.objects.filter(id__in=available_complex_ids)
+        
+        metadata['available_residential_complexes'] = ResidentialComplexListSerializer(
+            available_complexes, 
+            many=True
+        ).data
+        
+        # Category-specific metadata
+        category = request.query_params.get('category', 'APARTMENT')
+        if category == 'APARTMENT':
+            metadata.update({
+                'rooms_available': list(filtered_properties.values_list('rooms', flat=True).distinct().order_by('rooms'))
+            })
+            
+        return metadata
     
     @extend_schema(
         request=PropertySerializer,

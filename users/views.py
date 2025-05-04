@@ -10,6 +10,7 @@ from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 import random
 
+from clients.mobizon import sms_client
 from users.models import CustomUser, OneTimePassword
 from users.serializers import PhoneSerializer, OTPVerifySerializer, RegistrationCompleteSerializer, LoginSerializer, \
     ProfileSerializer
@@ -82,6 +83,18 @@ class SendOTPView(APIView):
             code=otp_code,
         )
 
+        sms_message = f"THIS IS TEST UNIVERSITY PROJECT ArchiQ. Enter the code {otp_code} to confirm registration in your personal account."
+        sms_response, sms_status = sms_client.send_message(sms_message, phone)
+
+        if sms_status != status.HTTP_200_OK:
+            return Response(
+                {
+                    "success": False,
+                    "message": "Не удалось отправить СМС",
+                    # TODO: Remove in prod
+                    "debug_otp": otp_code
+                },
+            )
         return Response(
             {
                 "success": True,

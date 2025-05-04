@@ -191,6 +191,8 @@ LLM_MODEL = os.getenv('LLM_MODEL')
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 CHROMA_DB_PATH = os.getenv('CHROMA_DB_PATH')
 
+MOBIZON_KEY = os.getenv('MOBIZON_KEY')
+
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Archiq API',
     'DESCRIPTION': 'Archiq API documentation',
