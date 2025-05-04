@@ -25,6 +25,15 @@ AWS_S3_FILE_OVERWRITE = False
 AWS_QUERYSTRING_AUTH = False
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
+# Maximum size of the request body (50MB)
+DATA_UPLOAD_MAX_MEMORY_SIZE = 50485760
+
+# Maximum number of GET/POST parameters (1000)
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 1000
+
+# Maximum file upload size (50MB)
+FILE_UPLOAD_MAX_MEMORY_SIZE = 50485760
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
