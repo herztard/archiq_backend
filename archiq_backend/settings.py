@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'support',
     'properties',
     'sales',
+    'applications',
     'storages',
     'drf_spectacular',
 ]

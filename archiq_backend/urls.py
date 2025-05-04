@@ -35,4 +35,5 @@ urlpatterns = [
     path('', include('marketing.urls')),
     path('', include('properties.urls')),
     path('', include('location.urls')),
+    path('applications/', include('applications.urls')),
 ]
