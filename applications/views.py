@@ -25,7 +25,7 @@ class StandardResultsSetPagination(PageNumberPagination):
         summary="Create a new application",
         description="Submit an application with user details and property interest. Works for both authenticated and anonymous users.",
         request=UnauthenticatedApplicationSerializer,
-        responses={201: dict, 400: dict},
+        responses={status.HTTP_201_CREATED: dict, status.HTTP_400_BAD_REQUEST: dict},
         examples=[
             OpenApiExample(
                 'Unauthenticated example',
@@ -95,13 +95,11 @@ class ApplicationCreateView(generics.CreateAPIView):
     
     def post(self, request, *args, **kwargs):
         if request.user.is_authenticated:
-            # Handle authenticated user
             serializer = AuthenticatedApplicationSerializer(
                 data=request.data,
                 context={'request': request}
             )
         else:
-            # Handle unauthenticated user
             serializer = UnauthenticatedApplicationSerializer(data=request.data)
         
         if serializer.is_valid():
@@ -125,10 +123,6 @@ class ApplicationCreateView(generics.CreateAPIView):
     )
 )
 class ApplicationListView(generics.ListAPIView):
-    """
-    API view for listing applications.
-    Only accessible by staff/admin users.
-    """
     permission_classes = [IsAuthenticated, IsAdminUser]
     pagination_class = StandardResultsSetPagination
     serializer_class = ApplicationListSerializer
@@ -137,12 +131,10 @@ class ApplicationListView(generics.ListAPIView):
     def get(self, request, *args, **kwargs):
         applications = self.get_queryset()
         
-        # Filter by status if provided
         status_filter = request.query_params.get('status')
         if status_filter:
             applications = applications.filter(status=status_filter)
         
-        # Paginate results
         paginator = self.pagination_class()
         paginated_applications = paginator.paginate_queryset(applications, request)
         
@@ -154,13 +146,13 @@ class ApplicationListView(generics.ListAPIView):
     get=extend_schema(
         summary="Get application details",
         description="Admin only: Retrieve details for a specific application.",
-        responses={200: ApplicationListSerializer, 404: dict}
+        responses={status.HTTP_200_OK: ApplicationListSerializer, status.HTTP_404_NOT_FOUND: dict}
     ),
     patch=extend_schema(
         summary="Update application",
         description="Admin only: Update application details, such as status.",
         request=ApplicationListSerializer,
-        responses={200: ApplicationListSerializer, 400: dict, 404: dict},
+        responses={status.HTTP_200_OK: ApplicationListSerializer, status.HTTP_400_BAD_REQUEST: dict, status.HTTP_404_NOT_FOUND: dict},
         examples=[
             OpenApiExample(
                 'Update status example',
@@ -174,14 +166,10 @@ class ApplicationListView(generics.ListAPIView):
     delete=extend_schema(
         summary="Delete application",
         description="Admin only: Delete an application.",
-        responses={204: None, 404: dict}
+        responses={status.HTTP_204_NO_CONTENT: None, status.HTTP_404_NOT_FOUND: dict}
     )
 )
 class ApplicationDetailView(generics.RetrieveUpdateDestroyAPIView):
-    """
-    API view for retrieving, updating, and deleting applications.
-    Only accessible by staff/admin users.
-    """
     permission_classes = [IsAuthenticated, IsAdminUser]
     serializer_class = ApplicationListSerializer
     queryset = Application.objects.all()

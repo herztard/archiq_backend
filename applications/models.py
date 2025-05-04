@@ -14,7 +14,6 @@ class Application(models.Model):
         ('CANCELED', 'Canceled'),
     )
 
-    # User information
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, 
         on_delete=models.SET_NULL, 
@@ -25,7 +24,6 @@ class Application(models.Model):
     name = models.CharField(max_length=255, null=True, blank=True)
     phone_number = PhoneNumberField(null=True, blank=True, region='KZ')
     
-    # Property interest
     property = models.ForeignKey(
         Property, 
         on_delete=models.SET_NULL, 
@@ -41,7 +39,6 @@ class Application(models.Model):
         related_name='applications'
     )
     
-    # Application details
     status = models.CharField(
         max_length=20, 
         choices=STATUS_CHOICES, 

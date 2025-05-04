@@ -6,10 +6,6 @@ from .models import Application
 
 
 class AuthenticatedApplicationSerializer(serializers.ModelSerializer):
-    """
-    Serializer for handling applications from authenticated users.
-    The user field is automatically set from the request.
-    """
     
     class Meta:
         model = Application
@@ -21,7 +17,6 @@ class AuthenticatedApplicationSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = self.context['request'].user
-        # Populate name and phone_number from user automatically
         name = f"{user.first_name} {user.last_name}".strip()
         return Application.objects.create(
             user=user, 
@@ -32,10 +27,6 @@ class AuthenticatedApplicationSerializer(serializers.ModelSerializer):
 
 
 class UnauthenticatedApplicationSerializer(serializers.ModelSerializer):
-    """
-    Serializer for handling applications from unauthenticated users.
-    Requires name and phone_number fields.
-    """
     phone_number = PhoneNumberField(
         required=True,
         help_text="Phone number in format +7XXXXXXXXXX"
@@ -56,9 +47,6 @@ class UnauthenticatedApplicationSerializer(serializers.ModelSerializer):
 
 
 class ApplicationListSerializer(serializers.ModelSerializer):
-    """
-    Serializer for listing applications with more detailed information.
-    """
     property_details = serializers.SerializerMethodField()
     residential_complex_details = serializers.SerializerMethodField()
     name = serializers.SerializerMethodField()
@@ -75,18 +63,14 @@ class ApplicationListSerializer(serializers.ModelSerializer):
     
     @extend_schema_field(serializers.CharField())
     def get_name(self, obj):
-        # If the application is linked to a user, get the name from the user model
         if obj.user and (obj.name is None or obj.name == ''):
             return f"{obj.user.first_name} {obj.user.last_name}".strip() or obj.user.phone_number
-        # Otherwise, return the name stored in the application
         return obj.name
     
     @extend_schema_field(serializers.CharField())
     def get_phone_number(self, obj):
-        # If the application is linked to a user, get the phone number from the user model
         if obj.user and (obj.phone_number is None or str(obj.phone_number) == ''):
             return str(obj.user.phone_number)
-        # Otherwise, return the phone number stored in the application
         return str(obj.phone_number) if obj.phone_number else None
     
     @extend_schema_field(serializers.DictField())
