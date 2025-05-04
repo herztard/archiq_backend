@@ -70,14 +70,14 @@ class PropertyAdmin(admin.ModelAdmin):
     inlines = [PropertyPhotosInline, PropertyVideosInline]
     list_display = ('id', 'category', 'number', 'block', 'price', 'area', 'floor')
     list_filter = ('category', 'floor', 'block__complex')
-    search_fields = ('number', 'description')
+    search_fields = ('number',)
     fieldsets = (
         (None, {
             'fields': ('block', 'category', 'number', 'price_per_sqm', 'rental_price', 'floor', 
-                       'area', 'rooms', 'renovation_type', 'wall_material', 'entrance')
+                       'area', 'rooms')
         }),
         ('Дополнительная информация', {
-            'fields': ('description', 'layout', 'layout_file'),
+            'fields': ('layout', 'layout_file'),
             'classes': ('collapse',),
         }),
     )

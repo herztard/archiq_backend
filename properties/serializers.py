@@ -76,8 +76,7 @@ class PropertySerializer(serializers.ModelSerializer):
         model = Property
         fields = [
             'id', 'category', 'number', 'price', 'price_per_sqm', 'rental_price',
-            'floor', 'area', 'rooms', 'renovation_type', 'wall_material',
-            'layout', 'description', 'entrance', 'property_photos', 'property_videos',
+            'floor', 'area', 'rooms', 'layout', 'property_photos', 'property_videos',
             'block_id', 'block', 'complex'
         ]
         read_only_fields = ['price', 'block', 'complex']
@@ -112,8 +111,7 @@ class PropertyDetailSerializer(serializers.ModelSerializer):
         model = Property
         fields = [
             'id', 'category', 'number', 'price', 'price_per_sqm', 'rental_price',
-            'floor', 'area', 'rooms', 'renovation_type', 'wall_material',
-            'layout', 'description', 'entrance', 'property_photos', 'property_videos',
+            'floor', 'area', 'rooms', 'layout', 'property_photos', 'property_videos',
             'block', 'complex'
         ]
         read_only_fields = ['price', 'block', 'complex']

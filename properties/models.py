@@ -103,11 +103,7 @@ class Property(models.Model):
     floor = models.IntegerField()
     area = models.DecimalField(max_digits=10, decimal_places=2)
     rooms = models.IntegerField(null=True, blank=True)
-    renovation_type = models.CharField(max_length=50, null=True, blank=True)
-    wall_material = models.CharField(max_length=50, null=True, blank=True)
     layout = models.URLField(null=True, blank=True)
-    description = models.TextField(null=True, blank=True)
-    entrance = models.IntegerField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if self.area is not None and self.price_per_sqm is not None:
