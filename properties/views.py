@@ -344,7 +344,6 @@ class PropertyListView(APIView):
     def get_filter_metadata(self, request, filtered_properties):
         metadata = {}
         
-        # Get aggregate data
         metadata.update({
             'min_total_price': filtered_properties.aggregate(Min('price'))['price__min'],
             'max_total_price': filtered_properties.aggregate(Max('price'))['price__max'],
@@ -357,7 +356,6 @@ class PropertyListView(APIView):
             'available_properties_count': filtered_properties.count()
         })
         
-        # Get available residential complexes
         available_complex_ids = filtered_properties.values_list('block__complex_id', flat=True).distinct()
         available_complexes = ResidentialComplex.objects.filter(id__in=available_complex_ids)
         
