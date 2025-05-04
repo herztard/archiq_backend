@@ -97,7 +97,7 @@ class Property(models.Model):
     block = models.ForeignKey(Block, on_delete=models.CASCADE, related_name="properties")
     category = models.CharField(max_length=50, choices=CATEGORY_TYPE_CHOICES)
     number = models.IntegerField(null=True)
-    price = models.DecimalField(max_digits=10, decimal_places=2, null=True)
+    price = models.DecimalField(max_digits=15, decimal_places=2, null=True)
     price_per_sqm = models.DecimalField(max_digits=10, decimal_places=2, null=True)
     rental_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     floor = models.IntegerField()

@@ -51,7 +51,7 @@ class ResidentialComplexListView(APIView):
         if district_id and district_id.isdigit():
             queryset = queryset.filter(district_id=int(district_id))
 
-        property_category = request.query_params.get('property_category')
+        property_category = request.query_params.get('property_category', 'APARTMENT')
         if property_category:
             queryset = queryset.filter(blocks__properties__category=property_category).distinct()
 
@@ -111,35 +111,63 @@ class ResidentialComplexListView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def get_filter_metadata(self, request):
-        property_category = request.query_params.get('property_category')
+        available_properties = Property.objects.exclude(
+            property_purchases__status__in=['RESERVED', 'PAID', 'COMPLETED']
+        )
         
-        if not property_category:
-            return {}
+        property_category = request.query_params.get('property_category', 'APARTMENT')
+        if property_category:
+            available_properties = available_properties.filter(category=property_category)
             
-        base_qs = Property.objects.filter(category=property_category)
+            if property_category == 'APARTMENT':
+                class_type = request.query_params.get('class_type')
+                if class_type:
+                    available_properties = available_properties.filter(block__complex__class_type=class_type)
+                
+                rooms = request.query_params.get('rooms')
+                if rooms and rooms.isdigit():
+                    available_properties = available_properties.filter(rooms=int(rooms))
         
         district_id = request.query_params.get('district')
         if district_id and district_id.isdigit():
-            base_qs = base_qs.filter(block__complex__district_id=int(district_id))
+            available_properties = available_properties.filter(block__complex__district_id=int(district_id))
         
+        min_floor = request.query_params.get('min_floor')
+        max_floor = request.query_params.get('max_floor')
+        if min_floor and min_floor.isdigit():
+            available_properties = available_properties.filter(floor__gte=int(min_floor))
+        if max_floor and max_floor.isdigit():
+            available_properties = available_properties.filter(floor__lte=int(max_floor))
+        
+        min_area = request.query_params.get('min_area')
+        max_area = request.query_params.get('max_area')
+        if min_area and min_area.replace('.', '', 1).isdigit():
+            available_properties = available_properties.filter(area__gte=float(min_area))
+        if max_area and max_area.replace('.', '', 1).isdigit():
+            available_properties = available_properties.filter(area__lte=float(max_area))
+        
+        min_total_price = request.query_params.get('min_total_price')
+        max_total_price = request.query_params.get('max_total_price')
+        if min_total_price and min_total_price.replace('.', '', 1).isdigit():
+            available_properties = available_properties.filter(price__gte=float(min_total_price))
+        if max_total_price and max_total_price.replace('.', '', 1).isdigit():
+            available_properties = available_properties.filter(price__lte=float(max_total_price))
+            
         metadata = {
-            'price_range': base_qs.aggregate(
-                min_price=Min('price'),
-                max_price=Max('price')
-            ),
-            'area_range': base_qs.aggregate(
-                min_area=Min('area'),
-                max_area=Max('area')
-            )
+            'min_total_price': available_properties.aggregate(Min('price'))['price__min'],
+            'max_total_price': available_properties.aggregate(Max('price'))['price__max'],
+            'min_price_per_sqm': available_properties.aggregate(Min('price_per_sqm'))['price_per_sqm__min'],
+            'max_price_per_sqm': available_properties.aggregate(Max('price_per_sqm'))['price_per_sqm__max'],
+            'min_area': available_properties.aggregate(Min('area'))['area__min'],
+            'max_area': available_properties.aggregate(Max('area'))['area__max'],
+            'min_floor': available_properties.aggregate(Min('floor'))['floor__min'],
+            'max_floor': available_properties.aggregate(Max('floor'))['floor__max'],
+            'available_properties_count': available_properties.count()
         }
         
         if property_category == 'APARTMENT':
             metadata.update({
-                'floor_range': base_qs.aggregate(
-                    min_floor=Min('floor'),
-                    max_floor=Max('floor')
-                ),
-                'rooms_available': list(base_qs.values_list('rooms', flat=True).distinct().order_by('rooms'))
+                'rooms_available': list(available_properties.values_list('rooms', flat=True).distinct().order_by('rooms'))
             })
             
         return metadata
