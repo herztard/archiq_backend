@@ -6,6 +6,7 @@ from .views import (
     SendOTPView,
     VerifyOTPView,
     RegisterUserView, LoginView, ProfileView, HealthCheckView,
+    UserPropertiesView,
 )
 
 urlpatterns = [
@@ -15,5 +16,6 @@ urlpatterns = [
     path('accounts/register/', RegisterUserView.as_view(), name='register'),
     path("accounts/login/", LoginView.as_view(), name="login"),
     path('accounts/profile/', ProfileView.as_view(), name='profile'),
+    path('accounts/properties/', UserPropertiesView.as_view(), name='user-properties'),
     path('health/', HealthCheckView.as_view(), name='health-check'),
 ]

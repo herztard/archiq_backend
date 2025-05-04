@@ -13,6 +13,9 @@ import random
 from users.models import CustomUser, OneTimePassword
 from users.serializers import PhoneSerializer, OTPVerifySerializer, RegistrationCompleteSerializer, LoginSerializer, \
     ProfileSerializer
+from properties.models import Property
+from properties.serializers import PropertySerializer
+from sales.models import PropertyPurchase
 
 class CheckPhoneView(APIView):
     permission_classes = []
@@ -300,3 +303,20 @@ class HealthCheckView(APIView):
 
     def get(self, request):
         return Response({"status": "running"}, status=status.HTTP_200_OK)
+
+class UserPropertiesView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    @extend_schema(
+        description="Returns properties owned by the authenticated user",
+        responses={200: PropertySerializer(many=True)}
+    )
+    def get(self, request):
+        # Get properties owned by the user through PropertyPurchase model
+        user_properties = Property.objects.filter(
+            property_purchases__user=request.user,
+            property_purchases__status__in=['PAID', 'COMPLETED']  # Only include properties with completed purchases
+        ).distinct()
+        
+        serializer = PropertySerializer(user_properties, many=True)
+        return Response(serializer.data)

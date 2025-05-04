@@ -6,8 +6,10 @@ from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from drf_spectacular.types import OpenApiTypes
+from rest_framework.exceptions import NotFound
 
 from .models import ResidentialComplex, Block, Property, ResidentialComplexPhotos, PropertyPhotos, PropertyVideos
+from sales.models import PropertyPurchase
 from .serializers import (
     ResidentialComplexListSerializer, ResidentialComplexDetailSerializer,
     ResidentialComplexCreateUpdateSerializer, BlockSerializer, PropertySerializer,
@@ -246,7 +248,6 @@ class ResidentialComplexPhotoDetailView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-# Block views
 class BlockListView(APIView):
     permission_classes = [ReadOnlyForAnyone]
     
@@ -328,10 +329,15 @@ class PropertyListView(APIView):
             OpenApiParameter(name="min_area", description="Filter by minimum area", type=OpenApiTypes.NUMBER, required=False),
             OpenApiParameter(name="max_area", description="Filter by maximum area", type=OpenApiTypes.NUMBER, required=False),
             OpenApiParameter(name="rooms", description="Filter by number of rooms (for APARTMENT category)", type=OpenApiTypes.INT, required=False),
-        ]
+        ],
+        description="List available properties. Properties with RESERVED, PAID, or COMPLETED status are not included in the results."
     )
     def get(self, request):
         queryset = Property.objects.all().prefetch_related('property_photos', 'property_videos', 'block', 'block__complex')
+        
+        queryset = queryset.exclude(
+            property_purchases__status__in=['PAID', 'RESERVED', 'COMPLETED']
+        )
         
         block_id = request.query_params.get('block_id')
         if block_id and block_id.isdigit():
@@ -385,10 +391,15 @@ class PropertyDetailView(APIView):
     permission_classes = [ReadOnlyForAnyone]
     
     def get_object(self, pk):
-        return get_object_or_404(
+        property = get_object_or_404(
             Property.objects.prefetch_related('property_photos', 'property_videos', 'block', 'block__complex'),
             pk=pk
         )
+        
+        if property.property_purchases.filter(status__in=['PAID', 'RESERVED', 'COMPLETED']).exists():
+            raise NotFound("Property is not available")
+            
+        return property
     
     def get(self, request, pk):
         property = self.get_object(pk)
