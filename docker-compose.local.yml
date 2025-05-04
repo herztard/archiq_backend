@@ -80,7 +80,7 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.local.conf:ro
+      - ./nginx/nginx.local.conf:/etc/nginx/nginx.local.conf:ro
       - ./static:/app/staticfiles
 
 volumes:
