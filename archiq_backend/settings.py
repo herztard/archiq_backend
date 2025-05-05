@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'applications',
     'storages',
     'drf_spectacular',
+    'agent',
 ]
 
 REST_FRAMEWORK = {

@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from typing import List, Dict, Optional
+from datetime import datetime
 
 
 class ChromaLoadRequestSerializer(serializers.Serializer):
@@ -22,4 +23,26 @@ class ChromaLoadRequestSerializer(serializers.Serializer):
         required=False,
         allow_empty=True,
         allow_null=True
-    ) 
+    )
+
+
+class UserDetailsSerializer(serializers.Serializer):
+    first_name = serializers.CharField(required=False, allow_null=True)
+    last_name = serializers.CharField(required=False, allow_null=True)
+    username = serializers.CharField(required=False, allow_null=True)
+    user_telegram_id = serializers.IntegerField(required=False, allow_null=True)
+
+
+class QueryDetailsSerializer(serializers.Serializer):
+    chat_id = serializers.IntegerField()
+    created_at = serializers.DateTimeField()
+
+
+class QueryCreateSerializer(serializers.Serializer):
+    query = serializers.CharField()
+    user_details = UserDetailsSerializer()
+    message_details = QueryDetailsSerializer()
+
+
+class QueryResponseSerializer(serializers.Serializer):
+    result = serializers.CharField() 

@@ -43,12 +43,11 @@ You are an AI assistant for a real estate search application. Your task is to in
 }
 
 Guidelines:
-1. If the user's query indicates a brand‐new search (e.g., “I want 3 rooms in a different district”), discard all prior criteria and start fresh.
-2. If it’s a follow‐up (e.g., “Actually, make it up to 120 m²” or “Also show me complexes in Alatau”), merge or overwrite only the specified fields.
-3. For location, `district` and `residential_complex` are mutually exclusive: if the user specifies a complex, drop any previously set district; if they specify a district, drop any previously set complex.
-4. For numeric ranges, use `min_` and `max_` prefixes appropriately.
-5. Include only those fields mentioned or clearly implied.
-6. Respond with exactly the JSON object—no extra text.
+1. If the user's query indicates a brand‐new search (e.g., "I want 3 rooms"), discard all prior criteria and start fresh.
+2. If it's a follow‐up (e.g., "Actually, make it up to 120 m²"), merge or overwrite only the specified fields.
+3. For numeric ranges, use `min_` and `max_` prefixes appropriately.
+4. Include only those fields mentioned or clearly implied.
+5. Respond with exactly the JSON object—no extra text.
 """
 
 def search_criteria_agent(state: AgentState) -> Dict[str, Any]:
