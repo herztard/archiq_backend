@@ -252,7 +252,7 @@ class StateDeleteMessagesView(APIView):
     tags=["State Management"],
     description="Get a simplified conversation for a thread",
     parameters=[OpenApiParameter(name="thread_id", type=str, location=OpenApiParameter.QUERY)],
-    responses={200: {"type": "array", "items": MessageSerializer}}
+    responses={200: {"type": "array", "items": {"type": "object", "properties": {"role": {"type": "string"}, "content": {"type": "string"}}}}}
 )
 class StateGetSimpleConversationView(APIView):
     def get(self, request):
