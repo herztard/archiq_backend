@@ -30,11 +30,11 @@ urlpatterns = [
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/token/verify/", TokenVerifyView.as_view(), name="token_verify"),
 
-    path('api/properties/', include('properties.urls')),
-    path('api/users/', include('users.urls')),
-    path('api/location/', include('location.urls')),
-    path('api/applications/', include('applications.urls')),
-    path('api/marketing/', include('marketing.urls')),
-    path('api/support/', include('support.urls')),
-    path('agent/', include('agent.urls')),
+    path('', include('properties.urls')),
+    path('', include('users.urls')),
+    path('', include('location.urls')),
+    path('applications/', include('applications.urls')),
+    path('', include('marketing.urls')),
+    path('support/', include('support.urls')),
+    path('', include('agent.urls')),
 ]
