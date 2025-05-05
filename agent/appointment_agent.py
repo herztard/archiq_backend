@@ -5,6 +5,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from dotenv import load_dotenv
 
 from archiq_backend import settings
+from agent.appointment_tools import create_property_application
 
 load_dotenv()
 
@@ -52,4 +53,5 @@ appointment_agent_prompt = ChatPromptTemplate.from_messages(
     ]
 ).partial(time=datetime.now())
 
-appointment_agent_runnable = appointment_agent_prompt
+appointment_tools = [create_property_application]
+appointment_agent_runnable = appointment_agent_prompt | llm.bind_tools(appointment_tools, parallel_tool_calls=False)

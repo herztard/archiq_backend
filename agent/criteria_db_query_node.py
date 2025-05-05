@@ -128,7 +128,8 @@ def query_real_estate_db(state: AgentState) -> Dict[str, Any]:
             lines = []
             for prop in results:
                 lines.append(
-                    f"property_id: {prop.id}. Адрес: {prop.block.complex.address}, ЖК: {prop.block.complex.name}, "
+                    f"property_id: {prop.id}. Адрес: {prop.block.complex.address}, ЖК: {prop.block.complex.name}, \n"
+                    f"complex_id: {prop.block.complex.id}"
                     f"Район: {prop.block.complex.district.name}\n"
                     f"Цена: {prop.price}\n"
                     f"Цена за квадратный метр: {prop.price_per_sqm}\n"
