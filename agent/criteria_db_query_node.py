@@ -9,9 +9,12 @@ def query_real_estate_db(state: AgentState) -> Dict[str, Any]:
     search_criteria = state.get("search_criteria", {})
     
     try:
-        # Start with all properties and use Django's ORM
         query = Property.objects.all().select_related(
             'block', 'block__complex', 'block__complex__district'
+        )
+        
+        query = query.exclude(
+            property_purchases__status__in=['RESERVED', 'PAID', 'COMPLETED']
         )
 
         # Floor range filters

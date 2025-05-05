@@ -15,6 +15,13 @@ class ToSearchDescriptiveDataAgent(BaseModel):
         description="Any additional information or requests from the user regarding questions of a reference nature."
     )
 
+class ToAppointmentAgent(BaseModel):
+    """Передает работу специализированному агенту по созданию заявок на просмотр, консультацию или подбор недвижимости."""
+    
+    request: str = Field(
+        description="Any additional information or requests from the user regarding property viewings, consultations, or applications."
+    )
+
 
 class CompleteOrEscalate(BaseModel):
     """Инструмент, позволяющий отметить текущую задачу как выполненную и/или передать управление

@@ -9,7 +9,7 @@ from typing import Literal
 from agent.prompts import SYSTEM_PROMPT
 from archiq_backend import settings
 from agent.agent_state import AgentState
-from agent.general_tools import ToSearchCriteriaAgent, ToSearchDescriptiveDataAgent
+from agent.general_tools import ToSearchCriteriaAgent, ToSearchDescriptiveDataAgent, ToAppointmentAgent
 
 load_dotenv()
 
@@ -23,7 +23,7 @@ main_agent_prompt = ChatPromptTemplate.from_messages(
     ]
 ).partial(time=datetime.now())
 
-main_tools = [ToSearchCriteriaAgent, ToSearchDescriptiveDataAgent]
+main_tools = [ToSearchCriteriaAgent, ToSearchDescriptiveDataAgent, ToAppointmentAgent]
 
 main_agent_runnable = main_agent_prompt | llm.bind_tools(main_tools, parallel_tool_calls=False)
 
@@ -31,7 +31,8 @@ main_agent_runnable = main_agent_prompt | llm.bind_tools(main_tools, parallel_to
 def route_main_agent(state: AgentState) -> Literal[
     "__end__",
     "search_criteria_agent",
-    "search_database_agent"
+    "search_database_agent",
+    "appointment_agent"
 ]:
 
     route = tools_condition(state)
@@ -43,5 +44,7 @@ def route_main_agent(state: AgentState) -> Literal[
             return "search_criteria_agent"
         if tool_calls[0]["name"] == ToSearchDescriptiveDataAgent.__name__:
             return "search_database_agent"
+        if tool_calls[0]["name"] == ToAppointmentAgent.__name__:
+            return "appointment_agent"
 
     raise ValueError("Invalid route")

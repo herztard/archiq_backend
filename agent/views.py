@@ -1,20 +1,26 @@
 from rest_framework import views, status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from django.conf import settings
 from psycopg import OperationalError
 from langchain_core.messages import HumanMessage, ToolMessage
-from typing import cast
+from typing import cast, List, Dict
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
+import json
+from django.db import connection
 
 from agent.vector_db import VectorDBConnection
 from agent.chroma_loader import ChromaDBLoader
 from agent.chroma_fetcher import ChromaDBFetcher
-from .serializers import ChromaLoadRequestSerializer
-from agent.serializers import QueryCreateSerializer, QueryResponseSerializer
+from .serializers import (
+    ChromaLoadRequestSerializer, QueryCreateSerializer, 
+    QueryResponseSerializer, StateDeleteSerializer, 
+    StateOutSerializer, StateMessagesOutSerializer,
+    MessageSerializer
+)
 from agent.graph_builder import create_graph
 from agent.agent_state import AgentState
 
@@ -203,3 +209,178 @@ class AgentChatView(APIView):
                     snapshot = graph.get_state(config)
         
         return snapshot.values["messages"][-1].content
+
+
+# State Management Views
+@extend_schema(
+    tags=["State Management"],
+    description="Delete all messages for a specific thread",
+    request=StateDeleteSerializer,
+    responses={200: StateOutSerializer}
+)
+class StateDeleteMessagesView(APIView):
+    def post(self, request):
+        serializer = StateDeleteSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        thread_id = serializer.validated_data['thread_id']
+        
+        # SQL queries to execute
+        queries = [
+            "DELETE FROM public.checkpoints WHERE thread_id = %s;",
+            "DELETE FROM public.checkpoint_writes WHERE thread_id = %s;",
+            "DELETE FROM public.checkpoint_blobs WHERE thread_id = %s;"
+        ]
+        
+        try:
+            with connection.cursor() as cursor:
+                for query in queries:
+                    cursor.execute(query, [thread_id])
+            
+            result = {"thread_id": thread_id, "result": "All messages have been removed."}
+            return Response(result, status=status.HTTP_200_OK)
+        except Exception as e:
+            print(f"Error deleting messages: {e}")
+            return Response(
+                {"detail": "An error occurred while deleting messages."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+@extend_schema(
+    tags=["State Management"],
+    description="Get a simplified conversation for a thread",
+    parameters=[OpenApiParameter(name="thread_id", type=str, location=OpenApiParameter.QUERY)],
+    responses={200: {"type": "array", "items": MessageSerializer}}
+)
+class StateGetSimpleConversationView(APIView):
+    def get(self, request):
+        thread_id = request.query_params.get('thread_id')
+        if not thread_id:
+            return Response(
+                {"detail": "thread_id parameter is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT checkpoint_id, thread_id, metadata
+                    FROM public.checkpoints
+                    WHERE thread_id = %s
+                    ORDER BY (metadata->>'step')::int ASC;
+                    """,
+                    [thread_id]
+                )
+                rows = cursor.fetchall()
+            
+            conversation = []
+            for row in rows:
+                metadata = row[2]
+                if isinstance(metadata, str):
+                    try:
+                        metadata = json.loads(metadata)
+                    except Exception as err:
+                        print("Error parsing metadata:", err)
+                        continue
+                
+                writes = metadata.get("writes")
+                if not writes:
+                    continue
+                
+                for key in ["__start__", "main_agent"]:
+                    if key in writes and writes[key]:
+                        if key == 'main_agent':
+                            messages = writes[key]["messages"]
+                            kwargs = messages["kwargs"]
+                            role = kwargs["type"]
+                            content = kwargs["content"]
+                            
+                            if role and content:
+                                conversation.append({"role": role, "content": content})
+                        else:
+                            messages = writes[key].get("messages", [])
+                            for msg in messages:
+                                kwargs = msg.get("kwargs")
+                                role = kwargs.get("type")
+                                content = kwargs.get("content")
+                                if role and content:
+                                    conversation.append({"role": role, "content": content})
+            
+            return Response(conversation, status=status.HTTP_200_OK)
+        except Exception as e:
+            print(f"Error getting conversation: {e}")
+            return Response(
+                {"detail": "An error occurred while retrieving the conversation."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+@extend_schema(
+    tags=["State Management"],
+    description="Get messages for a thread",
+    parameters=[OpenApiParameter(name="thread_id", type=str, location=OpenApiParameter.QUERY)],
+    responses={200: StateMessagesOutSerializer}
+)
+class StateGetMessagesView(APIView):
+    graph = None
+    
+    def get(self, request):
+        thread_id = request.query_params.get('thread_id')
+        if not thread_id:
+            return Response(
+                {"detail": "thread_id parameter is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        config = {"configurable": {"thread_id": thread_id}}
+        
+        if not self.graph:
+            self.graph = create_graph()
+        
+        try:
+            snapshot = self.graph.get_state(config)
+            messages = snapshot.values.get("messages", [])
+            
+            if len(messages) > 0:
+                # Convert messages to a list of strings for simplicity
+                message_strings = [str(msg) for msg in messages]
+                return Response({"thread_id": thread_id, "messages": message_strings})
+            
+            return Response(
+                {"thread_id": thread_id, "messages": ["There are no messages to get."]},
+                status=status.HTTP_200_OK
+            )
+        except Exception as e:
+            print(f"Error getting messages: {e}")
+            return Response(
+                {"thread_id": thread_id, "result": "There are no messages to get."},
+                status=status.HTTP_200_OK
+            )
+
+
+@extend_schema(
+    tags=["State Management"],
+    description="Get a PNG visualization of the agent graph",
+    responses={200: {"description": "PNG image of the graph"}}
+)
+class StateGetGraphPngView(APIView):
+    graph = None
+    
+    def get(self, request):
+        if not self.graph:
+            self.graph = create_graph()
+        
+        try:
+            image_data = self.graph.get_graph().draw_mermaid_png()
+            response = HttpResponse(content=image_data, content_type="image/png")
+            response['Content-Disposition'] = 'inline; filename="graph.png"'
+            return response
+        except Exception as e:
+            print(f"Error generating graph: {e}")
+            return Response(
+                {"detail": f"Error generating graph: {e}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

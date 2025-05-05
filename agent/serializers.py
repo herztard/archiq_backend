@@ -45,4 +45,26 @@ class QueryCreateSerializer(serializers.Serializer):
 
 
 class QueryResponseSerializer(serializers.Serializer):
-    result = serializers.CharField() 
+    result = serializers.CharField()
+
+
+# State management serializers
+class StateBaseSerializer(serializers.Serializer):
+    thread_id = serializers.CharField()
+
+
+class StateDeleteSerializer(StateBaseSerializer):
+    pass
+
+
+class StateOutSerializer(StateBaseSerializer):
+    result = serializers.CharField()
+
+
+class MessageSerializer(serializers.Serializer):
+    role = serializers.CharField()
+    content = serializers.CharField()
+
+
+class StateMessagesOutSerializer(StateBaseSerializer):
+    messages = serializers.ListField(child=serializers.CharField()) 

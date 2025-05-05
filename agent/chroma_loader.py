@@ -14,40 +14,32 @@ class ChromaDBLoader:
     def __init__(self):
         self.chroma_client = VectorDBConnection.get_client()
         
-        # Handle model initialization with better error handling
         try:
-            # Try standard initialization
             self.embedding_model = HuggingFaceEmbedding(model_name=settings.EMBEDDING_MODEL)
         except NotImplementedError as e:
             if "Cannot copy out of meta tensor" in str(e):
-                # Fix for newer PyTorch versions that require to_empty()
                 import torch
                 from sentence_transformers import SentenceTransformer
                 
                 print("Using alternative model loading method for newer PyTorch versions")
-                # Load model with device='meta' and then use to_empty()
                 model = SentenceTransformer(settings.EMBEDDING_MODEL)
                 if hasattr(model, "to_empty"):
                     try:
-                        # For PyTorch 2.0+
                         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
                         model = model.to_empty(device=device)
                         model.eval()
                         self.embedding_model = HuggingFaceEmbedding(model=model)
                     except Exception as inner_e:
                         print(f"Failed with to_empty() method: {inner_e}")
-                        # Last resort - try with CPU only and no_grad
                         with torch.no_grad():
                             model = SentenceTransformer(settings.EMBEDDING_MODEL, device="cpu")
                             self.embedding_model = HuggingFaceEmbedding(model=model)
                 else:
-                    # Fallback to CPU only as last resort
                     print("Model doesn't have to_empty() method, falling back to CPU")
                     with torch.no_grad():
                         model = SentenceTransformer(settings.EMBEDDING_MODEL, device="cpu")
                         self.embedding_model = HuggingFaceEmbedding(model=model)
             else:
-                # Re-raise if it's a different error
                 raise
 
     def fetch_data(self, table_name: str, columns: List[str]):
