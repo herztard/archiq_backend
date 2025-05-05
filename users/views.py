@@ -284,15 +284,7 @@ class ProfileView(APIView):
 
     @extend_schema(
         description="Получить данные профиля текущего пользователя",
-        responses={status.HTTP_200_OK: {
-            "type": "object",
-            "properties": {
-                "id": {"type": "integer"},
-                "phone_number": {"type": "string"},
-                "first_name": {"type": "string"},
-                "last_name": {"type": "string"}
-            }
-        }}
+        responses={status.HTTP_200_OK: ProfileSerializer}
     )
     def get(self, request):
         user = request.user
@@ -301,24 +293,10 @@ class ProfileView(APIView):
     
     @extend_schema(
         description="Обновить данные профиля текущего пользователя",
-        request={
-            "type": "object",
-            "properties": {
-                "first_name": {"type": "string"},
-                "last_name": {"type": "string"}
-            }
-        },
+        request=ProfileSerializer,
         responses={
-            status.HTTP_200_OK: {
-                "type": "object",
-                "properties": {
-                    "id": {"type": "integer"},
-                    "phone_number": {"type": "string"},
-                    "first_name": {"type": "string"},
-                    "last_name": {"type": "string"}
-                }
-            },
-            status.HTTP_400_BAD_REQUEST: {"type": "object"}
+            status.HTTP_200_OK: ProfileSerializer,
+            status.HTTP_400_BAD_REQUEST: "Incorrect data"
         }
     )
     def patch(self, request):
@@ -344,26 +322,7 @@ class UserPropertiesView(APIView):
     
     @extend_schema(
         description="Returns properties owned by the authenticated user",
-        responses={200: {
-            "type": "array", 
-            "items": {
-                "type": "object",
-                "properties": {
-                    "id": {"type": "integer"},
-                    "block": {"type": "integer"},
-                    "category": {"type": "string"},
-                    "number": {"type": "integer"},
-                    "price": {"type": "number"},
-                    "price_per_sqm": {"type": "number"},
-                    "floor": {"type": "integer"},
-                    "area": {"type": "number"},
-                    "rooms": {"type": "integer"},
-                    "layout": {"type": "string", "nullable": true},
-                    "property_photos": {"type": "array", "items": {"type": "object"}},
-                    "property_videos": {"type": "array", "items": {"type": "object"}}
-                }
-            }
-        }}
+        responses={200: PropertySerializer(many=True)}
     )
     def get(self, request):
         # Get properties owned by the user through PropertyPurchase model
