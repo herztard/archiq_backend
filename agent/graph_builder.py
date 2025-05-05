@@ -13,7 +13,8 @@ from agent.search_database_agent import search_database_tools, search_database_a
 from agent.search_criteria_agent import search_criteria_agent
 from agent.main_agent import main_agent_runnable, route_main_agent
 from agent.criteria_db_query_node import query_real_estate_db
-from agent.appointment_agent import appointment_agent_runnable, appointment_tools
+from agent.appointment_agent import appointment_agent_runnable
+from agent.appointment_tools import create_property_application
 from agent.create_node import Assistant, back_to_main, create_tool_node
 
 load_dotenv()
@@ -37,7 +38,7 @@ def create_graph() -> CompiledGraph:
 
     # appointment agent
     builder.add_node("appointment_agent", Assistant(appointment_agent_runnable, True))
-    builder.add_node("appointment_tools", ToolNode(appointment_tools))
+    builder.add_node("appointment_tools", ToolNode([create_property_application]))
 
     # add edges for tools
     builder.add_conditional_edges("search_database_agent", tools_condition)
