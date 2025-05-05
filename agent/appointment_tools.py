@@ -21,9 +21,9 @@ class AppointmentTools:
             phone_number: Phone number in format +7XXXXXXXXXX
             property_id: ID of a specific property (optional)
             complex_id: ID of a residential complex (optional)
-            
+        
         Returns:
-            Confirmation message about the application submission
+            str: Confirmation message about the application submission
         """
         try:
             if not name or not phone_number:
