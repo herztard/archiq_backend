@@ -32,7 +32,7 @@ NOTE: Since this is a newly registered domain, SDU's WiFi is blocking it.
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/yourusername/archiq_backend.git
+git clone https://github.com/herztard/archiq_backend.git
 
 # 2. Navigate into the project directory
 cd archiq_backend
@@ -53,7 +53,7 @@ docker-compose up -d --build
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/yourusername/archiq_backend.git
+git clone https://github.com/herztard/archiq_backend.git
 
 # 2. Navigate into the project directory
 cd archiq_backend

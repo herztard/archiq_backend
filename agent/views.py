@@ -163,8 +163,6 @@ class AgentChatView(APIView):
         return Response(response_serializer.data, status=status.HTTP_200_OK)
     
     def get_human_approval(self, tool_call):
-        # In a real API, you might not use this interactive approach
-        # For now, auto-approve all tool calls
         return "yes"
     
     def process_single_question(self, graph, question, config):
