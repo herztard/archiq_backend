@@ -29,7 +29,8 @@ def query_real_estate_db(state: AgentState) -> Dict[str, Any]:
                     ". Уберите или измените этот критерий."
                 ))]}
             query = q
-            
+
+
         if search_criteria.get("max_floor") is not None:
             q = query.filter(floor__lte=search_criteria["max_floor"])
             if not q.exists():
